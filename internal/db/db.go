@@ -205,10 +205,7 @@ func (db *DB) GetChannelByName(ctx context.Context, nameHash []byte) (*models.Ch
 		&channel.MemberCount,
 		&channel.CreatedAt,
 	)
-	if err != nil {
-		return nil, err
-	}
-	return &channel, nil
+	return &channel, err
 }
 
 // AddChannelMember adds a user to a channel
@@ -226,11 +223,54 @@ func (db *DB) AddChannelMember(ctx context.Context, member *models.ChannelMember
 	return err
 }
 
-// IncrementChannelMemberCount increments the member count
+// IncrementChannelMemberCount increments member count
 func (db *DB) IncrementChannelMemberCount(ctx context.Context, channelID string) error {
 	query := `UPDATE channels SET member_count = member_count + 1 WHERE channel_id = ?`
 	_, err := db.ExecContext(ctx, query, channelID)
 	return err
+}
+
+// GetChannelMember retrieves a specific channel member
+func (db *DB) GetChannelMember(ctx context.Context, channelID, userID string) (*models.ChannelMember, error) {
+	query := `
+		SELECT channel_id, user_id, joined_at, is_op
+		FROM channel_members
+		WHERE channel_id = ? AND user_id = ?
+	`
+	var member models.ChannelMember
+	err := db.QueryRowContext(ctx, query, channelID, userID).Scan(
+		&member.ChannelID,
+		&member.UserID,
+		&member.JoinedAt,
+		&member.IsOp,
+	)
+	return &member, err
+}
+
+// GetChannelMembers retrieves all members of a channel
+func (db *DB) GetChannelMembers(ctx context.Context, channelID string) ([]*models.ChannelMember, error) {
+	query := `
+		SELECT channel_id, user_id, joined_at, is_op
+		FROM channel_members
+		WHERE channel_id = ?
+		ORDER BY joined_at ASC
+	`
+	rows, err := db.QueryContext(ctx, query, channelID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var members []*models.ChannelMember
+	for rows.Next() {
+		var member models.ChannelMember
+		err := rows.Scan(&member.ChannelID, &member.UserID, &member.JoinedAt, &member.IsOp)
+		if err != nil {
+			return nil, err
+		}
+		members = append(members, &member)
+	}
+	return members, nil
 }
 
 // StoreMessage stores an encrypted message
@@ -321,15 +361,4 @@ func (db *DB) GetUserMessages(ctx context.Context, userID string, limit int) ([]
 	return messages, nil
 }
 
-// GetPubkeyX25519 retrieves a user's X25519 public key
-func (db *DB) GetPubkeyX25519(ctx context.Context, userID string) ([]byte, error) {
-	query := `SELECT pubkey_x25519 FROM users WHERE user_id = ?`
-	var pubkey []byte
-	err := db.QueryRowContext(ctx, query, userID).Scan(&pubkey)
-	return pubkey, err
-}
-
-// Close closes the database connection
-func (db *DB) Close() error {
-	return db.DB.Close()
-}
+// HashKey creates a blind index for a public key
