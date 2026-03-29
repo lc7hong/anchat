@@ -328,6 +328,7 @@ func (s *Server) handleChannelJoin(ctx context.Context, userID string, cmdData m
 
 // handleChannelCreate handles creating a new channel
 func (s *Server) handleChannelCreate(ctx context.Context, userID string, cmdData map[string]interface{}) protocol.CommandResponse {
+func (s *Server) handleChannelCreate(ctx context.Context, userID string, cmdData map[string]interface{}) protocol.CommandResponse {
 	// TODO: Implement channel create
 	return protocol.CommandResponse{
 		Status: "error",
@@ -398,14 +399,6 @@ func (s *Server) handleCommandByType(ctx context.Context, userID string, cmdData
 }
 
 
-// handleChannelCreate handles creating a new channel
-	return protocol.CommandResponse{
-		Status: "error",
-		Error:  "Not yet implemented",
-	}
-}
-
-// handleLogout handles session termination
 func (s *Server) handleLogout(ctx context.Context, userID string) protocol.CommandResponse {
 	if err := s.authService.Logout(ctx, userID); err != nil {
 		return protocol.CommandResponse{
