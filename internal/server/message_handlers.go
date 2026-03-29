@@ -2,9 +2,7 @@ package server
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
-	"time"
 
 	"github.com/huyng/anchat/internal/db"
 	"github.com/huyng/anchat/internal/models"
@@ -61,7 +59,6 @@ func (s *Server) handleMsg(ctx context.Context, userID string, cmdData map[strin
 		}
 	}
 
-	nonce, err := protocol.DecodeBase64URL(cmd.Nonce)
 	if err != nil {
 		return protocol.CommandResponse{
 			Status: "error",
@@ -76,7 +73,6 @@ func (s *Server) handleMsg(ctx context.Context, userID string, cmdData map[strin
 		SenderKeyHash: db.HashKey(recipient.PubkeyX25519),
 		EncryptedBlob:  ciphertext,
 		Signature:      nil, // TODO: Add Ed25519 signature support
-		Timestamp:      time.Now(),
 	})
 	if err != nil {
 		return protocol.CommandResponse{
@@ -92,7 +88,6 @@ func (s *Server) handleMsg(ctx context.Context, userID string, cmdData map[strin
 		From:       userID,
 		Ciphertext: cmd.Ciphertext, // Keep as base64url for client
 		Nonce:      cmd.Nonce,
-		Timestamp:  time.Now().Unix(),
 	})
 
 	return protocol.CommandResponse{

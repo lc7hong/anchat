@@ -328,8 +328,6 @@ func (s *Server) handleChannelJoin(ctx context.Context, userID string, cmdData m
 
 // handleChannelCreate handles creating a new channel
 func (s *Server) handleChannelCreate(ctx context.Context, userID string, cmdData map[string]interface{}) protocol.CommandResponse {
-func (s *Server) handleChannelCreate(ctx context.Context, userID string, cmdData map[string]interface{}) protocol.CommandResponse {
-	// TODO: Implement channel create
 	return protocol.CommandResponse{
 		Status: "error",
 		Error:  "Not yet implemented",
