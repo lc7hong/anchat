@@ -307,6 +307,60 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleCommandByType routes commands to their handlers
+
+// handleChannelSend handles channel messages
+func (s *Server) handleChannelSend(ctx context.Context, userID string, cmdData map[string]interface{}) protocol.CommandResponse {
+	// TODO: Implement channel send
+	return protocol.CommandResponse{
+		Status: "error",
+		Error:  "Not yet implemented",
+	}
+}
+
+// handleChannelJoin handles joining a channel
+func (s *Server) handleChannelJoin(ctx context.Context, userID string, cmdData map[string]interface{}) protocol.CommandResponse {
+	// TODO: Implement channel join
+	return protocol.CommandResponse{
+		Status: "error",
+		Error:  "Not yet implemented",
+	}
+}
+
+// handleChannelCreate handles creating a new channel
+func (s *Server) handleChannelCreate(ctx context.Context, userID string, cmdData map[string]interface{}) protocol.CommandResponse {
+	return protocol.CommandResponse{
+		Status: "error",
+		Error:  "Not yet implemented",
+	}
+}
+
+// handleChannelInvite handles inviting a user to a channel
+func (s *Server) handleChannelInvite(ctx context.Context, userID string, cmdData map[string]interface{}) protocol.CommandResponse {
+	// TODO: Implement channel invite
+	return protocol.CommandResponse{
+		Status: "error",
+		Error:  "Not yet implemented",
+	}
+}
+
+// handleHistorySync handles history sync requests
+func (s *Server) handleHistorySync(ctx context.Context, userID string, cmdData map[string]interface{}) protocol.CommandResponse {
+	// TODO: Implement history sync
+	return protocol.CommandResponse{
+		Status: "error",
+		Error:  "Not yet implemented",
+	}
+}
+
+// handleStatus handles status updates
+func (s *Server) handleStatus(ctx context.Context, userID string, cmdData map[string]interface{}) protocol.CommandResponse {
+	// TODO: Implement status
+	return protocol.CommandResponse{
+		Status: "error",
+		Error:  "Not yet implemented",
+	}
+}
+
 func (s *Server) handleCommandByType(ctx context.Context, userID string, cmdData map[string]interface{}) protocol.CommandResponse {
 	cmdType, ok := cmdData["cmd"].(string)
 	if !ok {
@@ -342,70 +396,7 @@ func (s *Server) handleCommandByType(ctx context.Context, userID string, cmdData
 	}
 }
 
-// handleMsg handles private messages
-func (s *Server) handleMsg(ctx context.Context, userID string, cmdData map[string]interface{}) protocol.CommandResponse {
-	// TODO: Implement message handling
-	return protocol.CommandResponse{
-		Status: "error",
-		Error:  "Not yet implemented",
-	}
-}
 
-// handleChannelSend handles channel messages
-func (s *Server) handleChannelSend(ctx context.Context, userID string, cmdData map[string]interface{}) protocol.CommandResponse {
-	// TODO: Implement channel send
-	return protocol.CommandResponse{
-		Status: "error",
-		Error:  "Not yet implemented",
-	}
-}
-
-// handleChannelJoin handles joining a channel
-func (s *Server) handleChannelJoin(ctx context.Context, userID string, cmdData map[string]interface{}) protocol.CommandResponse {
-	// TODO: Implement channel join
-	return protocol.CommandResponse{
-		Status: "error",
-		Error:  "Not yet implemented",
-	}
-}
-
-// handleChannelCreate handles creating a new channel
-func (s *Server) handleChannelCreate(ctx context.Context, userID string, cmdData map[string]interface{}) protocol.CommandResponse {
-	// TODO: Implement channel create
-	return protocol.CommandResponse{
-		Status: "error",
-		Error:  "Not yet implemented",
-	}
-}
-
-// handleChannelInvite handles inviting a user to a channel
-func (s *Server) handleChannelInvite(ctx context.Context, userID string, cmdData map[string]interface{}) protocol.CommandResponse {
-	// TODO: Implement channel invite
-	return protocol.CommandResponse{
-		Status: "error",
-		Error:  "Not yet implemented",
-	}
-}
-
-// handleHistorySync handles history sync requests
-func (s *Server) handleHistorySync(ctx context.Context, userID string, cmdData map[string]interface{}) protocol.CommandResponse {
-	// TODO: Implement history sync
-	return protocol.CommandResponse{
-		Status: "error",
-		Error:  "Not yet implemented",
-	}
-}
-
-// handleStatus handles status updates
-func (s *Server) handleStatus(ctx context.Context, userID string, cmdData map[string]interface{}) protocol.CommandResponse {
-	// TODO: Implement status
-	return protocol.CommandResponse{
-		Status: "error",
-		Error:  "Not yet implemented",
-	}
-}
-
-// handleLogout handles session termination
 func (s *Server) handleLogout(ctx context.Context, userID string) protocol.CommandResponse {
 	if err := s.authService.Logout(ctx, userID); err != nil {
 		return protocol.CommandResponse{
