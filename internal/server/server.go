@@ -20,6 +20,7 @@ type Server struct {
 	db          *db.DB
 	authService  *auth.AuthService
 	httpServer  *http.Server
+	time         *time.Time
 	tlsCert     string
 	tlsKey      string
 	tlsEnabled  bool
@@ -317,6 +318,7 @@ func (s *Server) handleCommandByType(ctx context.Context, userID string, cmdData
 
 	switch protocol.CommandType(cmdType) {
 	case protocol.CmdMsg:
+		// Import from message_handlers
 		return s.handleMsg(ctx, userID, cmdData)
 	case protocol.CmdChannelSend:
 		return s.handleChannelSend(ctx, userID, cmdData)
@@ -434,4 +436,26 @@ func (s *Server) unsubscribe(userID string, eventChan chan<- []byte) {
 func (s *Server) sendSSEEvent(w http.ResponseWriter, event string, data interface{}) {
 	eventData, _ := json.Marshal(data)
 	fmt.Fprintf(w, "event: %s\ndata: %s\n\n", event, string(eventData))
+}
+
+// notifyUser sends an SSE event to a specific user
+func (s *Server) notifyUser(userID string, event interface{}) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	eventCh, ok := s.subscribers[userID]
+	if !ok {
+		return
+	}
+
+	eventData, err := json.Marshal(event)
+	if err != nil {
+		return
+	}
+
+	select {
+	case eventCh <- eventData:
+	default:
+		// Channel full, skip
+	}
 }
