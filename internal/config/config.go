@@ -66,10 +66,6 @@ func Load(path string) (*Config, error) {
 	}
 
 	// Validate required fields
-	if cfg.Security.StorageKey == "" {
-		return nil, fmt.Errorf("missing required field: security.storage_key")
-	}
-
 	if cfg.TLS.Enabled {
 		if cfg.TLS.Cert == "" {
 			return nil, fmt.Errorf("TLS enabled but missing tls.cert")

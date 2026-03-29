@@ -8,50 +8,38 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/huyng/anchat/internal/config"
 	"github.com/huyng/anchat/internal/server"
 )
 
-var (
-	dbPath      string
-	storageKey  string
-	tlsCert    string
-	tlsKey     string
-	port        string
-)
+var configPath string
 
 func init() {
-	flag.StringVar(&dbPath, "db", "anchat.db", "Path to SQLite database")
-	flag.StringVar(&storageKey, "storage-key", "", "Server storage encryption key (required)")
-	flag.StringVar(&tlsCert, "cert", "", "TLS certificate path (required)")
-	flag.StringVar(&tlsKey, "key", "", "TLS private key path (required)")
-	flag.StringVar(&port, "port", ":443", "Port to listen on")
+	flag.StringVar(&configPath, "config", "anchat.toml", "Path to config file")
 	flag.Parse()
 }
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	// Validate required arguments
-	if storageKey == "" {
-		log.Fatal("Missing required argument: -storage-key")
-	}
-	if tlsCert == "" {
-		log.Fatal("Missing required argument: -cert")
-	}
-	if tlsKey == "" {
-		log.Fatal("Missing required argument: -key")
-	}
-
-	// Check if TLS files exist
-	if _, err := os.Stat(tlsCert); os.IsNotExist(err) {
-		log.Fatalf("TLS certificate not found: %s", tlsCert)
-	}
-	if _, err := os.Stat(tlsKey); os.IsNotExist(err) {
-		log.Fatalf("TLS private key not found: %s", tlsKey)
+	// Load configuration (optional)
+	var cfg *config.Config
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		// Config file doesn't exist, use defaults
+		cfg = config.DefaultConfig()
+		log.Printf("No config file found at %s, using defaults", configPath)
+		log.Println("Create a config file to customize settings (see anchat.example.toml)")
+	} else {
+		var err error
+		cfg, err = config.Load(configPath)
+		if err != nil {
+			log.Fatalf("Failed to load config from %s: %v", configPath, err)
+		}
+		log.Printf("Loaded config from %s", configPath)
 	}
 
 	// Create server
-	anchat, err := server.New(dbPath, storageKey, tlsCert, tlsKey)
+	anchat, err := server.New(cfg.DB.Path, cfg.Security.StorageKey, cfg.TLS.Cert, cfg.TLS.Key, cfg.TLS.Enabled)
 	if err != nil {
 		log.Fatalf("Failed to create server: %v", err)
 	}
@@ -69,12 +57,17 @@ func main() {
 	}()
 
 	// Start server
-	log.Printf("AnChat server starting on %s", port)
-	log.Printf("Database: %s", dbPath)
-	log.Printf("TLS cert: %s", tlsCert)
-	log.Printf("TLS key: %s", tlsKey)
+	log.Printf("AnChat server starting on %s", cfg.Server.Port)
+	log.Printf("Database: %s", cfg.DB.Path)
+	if cfg.TLS.Enabled {
+		log.Printf("TLS enabled: cert=%s, key=%s", cfg.TLS.Cert, cfg.TLS.Key)
+	} else {
+		log.Println("TLS disabled - running in plaintext mode")
+		log.Println("WARNING: Session tokens and public keys will be sent unencrypted")
+		log.Println("Messages remain end-to-end encrypted")
+	}
 
-	if err := anchat.Start(port); err != nil {
+	if err := anchat.Start(cfg.Server.Port); err != nil {
 		log.Fatalf("Server error: %v", err)
 	}
 }
