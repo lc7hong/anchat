@@ -1,0 +1,34 @@
+# Binaries
+anchat-server
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test coverage
+*.out
+coverage.html
+
+# Go workspace file
+go.work
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Config files with secrets
+anchat.toml
+
+# TLS certificates
+*.pem
+*.crt
+*.key
+certs/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

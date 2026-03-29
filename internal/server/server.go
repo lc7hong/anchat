@@ -20,6 +20,9 @@ type Server struct {
 	db          *db.DB
 	authService  *auth.AuthService
 	httpServer  *http.Server
+	tlsCert     string
+	tlsKey      string
+	tlsEnabled  bool
 
 	// SSE connection management
 	mu          sync.RWMutex
@@ -27,7 +30,7 @@ type Server struct {
 }
 
 // New creates a new AnChat server
-func New(dbPath, storageKey, tlsCert, tlsKey string) (*Server, error) {
+func New(dbPath, storageKey, tlsCert, tlsKey string, tlsEnabled bool) (*Server, error) {
 	database, err := db.New(dbPath, storageKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize database: %w", err)
@@ -38,6 +41,9 @@ func New(dbPath, storageKey, tlsCert, tlsKey string) (*Server, error) {
 	server := &Server{
 		db:         database,
 		authService: authService,
+		tlsCert:    tlsCert,
+		tlsKey:     tlsKey,
+		tlsEnabled: tlsEnabled,
 		subscribers: make(map[string]chan<- []byte),
 	}
 
@@ -70,7 +76,11 @@ func (s *Server) Start(addr string) error {
 	}
 
 	log.Printf("Starting AnChat server on %s", addr)
-	return s.httpServer.ListenAndServeTLS("", "") // Will be configured with certs
+
+	if s.tlsEnabled {
+		return s.httpServer.ListenAndServeTLS(s.tlsCert, s.tlsKey)
+	}
+	return s.httpServer.ListenAndServe()
 }
 
 // Stop gracefully shuts down the server
